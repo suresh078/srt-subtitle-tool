@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Subtitle Generator | Convert Audio/Video to SRT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#2563eb', primaryHover: '#1d4ed8' }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Toggle Switch CSS */
+        .toggle-checkbox:checked { right: 0; border-color: #2563eb; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #2563eb; }
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased overflow-x-hidden">
+
+    <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-closed-captioning text-primary"></i> SubGen AI
+        </div>
+        <div>
+            <a href="#tool" class="text-sm font-medium text-slate-600 hover:text-primary transition">App</a>
+            <a href="#features" class="ml-6 text-sm font-medium text-slate-600 hover:text-primary transition">Features</a>
+        </div>
+    </nav>
+
+    <header class="container mx-auto px-6 pt-16 pb-24 text-center">
+        <div class="inline-block bg-blue-100 text-primary px-4 py-1 rounded-full text-sm font-semibold mb-6">🚀 Fast & Accurate</div>
+        <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 leading-tight mb-6 tracking-tight">
+            AI Subtitle Generator <br> 
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-400">Convert Audio & Video to SRT</span>
+        </h1>
+        <p class="text-lg md:text-xl text-slate-500 mb-10 max-w-2xl mx-auto">
+            Upload your file, choose language, and get accurate subtitles instantly using AI.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="#tool" class="bg-primary hover:bg-primaryHover text-white font-semibold py-4 px-8 rounded-full transition shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2">
+                👉 Generate Subtitles
+            </a>
+            <a href="#how-it-works" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold py-4 px-8 rounded-full transition shadow-sm flex items-center justify-center gap-2">
+                👉 See How It Works
+            </a>
+        </div>
+    </header>
+
+    <section id="tool" class="container mx-auto px-4 pb-20">
+        <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl border border-slate-100 p-8 md:p-10 relative overflow-hidden">
+            
+            <div id="setup-view" class="fade-in">
+                <div class="border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 p-10 text-center hover:bg-slate-100 transition cursor-pointer mb-8 relative group" id="drop-zone">
+                    <input type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".mp3,.wav,.m4a,.mp4,.mov,.mkv" id="file-upload">
+                    <div class="text-5xl text-blue-500 mb-4 group-hover:scale-110 transition duration-300">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-slate-800 mb-2">Drag & drop audio/video files here</h3>
+                    <p class="text-slate-500 text-sm">or click to browse from your device</p>
+                    <div class="mt-4 flex flex-wrap justify-center gap-2 text-xs text-slate-400 font-medium">
+                        <span class="bg-white px-2 py-1 rounded shadow-sm">MP3</span>
+                        <span class="bg-white px-2 py-1 rounded shadow-sm">WAV</span>
+                        <span class="bg-white px-2 py-1 rounded shadow-sm">M4A</span>
+                        <span class="bg-white px-2 py-1 rounded shadow-sm">MP4</span>
+                        <span class="bg-white px-2 py-1 rounded shadow-sm">MOV</span>
+                        <span class="bg-white px-2 py-1 rounded shadow-sm">MKV</span>
+                    </div>
+                    <p id="file-name" class="mt-4 text-primary font-medium hidden"></p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-semibold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-globe text-primary"></i> Language Settings</h4>
+                            <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg mb-3">
+                                <span class="text-sm font-medium text-slate-700">Auto detect language</span>
+                                <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                    <input type="checkbox" name="toggle" id="auto-detect" checked class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 right-0 border-primary"/>
+                                    <label for="auto-detect" class="toggle-label block overflow-hidden h-5 rounded-full bg-primary cursor-pointer transition-colors duration-300"></label>
+                                </div>
+                            </div>
+                            <select class="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-lg focus:ring-primary focus:border-primary block p-3">
+                                <option>Tamil (தமிழ்)</option>
+                                <option>English</option>
+                                <option>Hindi</option>
+                                <option>Spanish</option>
+                                <option>French</option>
+                                <option>German</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <h4 class="font-semibold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-language text-primary"></i> Translation</h4>
+                            <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg mb-3">
+                                <span class="text-sm font-medium text-slate-700">Translate subtitles</span>
+                                <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                    <input type="checkbox" id="translate-toggle" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 border-slate-300 appearance-none cursor-pointer transition-all duration-300"/>
+                                    <label for="translate-toggle" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer transition-colors duration-300"></label>
+                                </div>
+                            </div>
+                            <select id="target-lang" class="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-lg focus:ring-primary focus:border-primary block p-3 hidden opacity-0 transition-opacity duration-300">
+                                <option value="" disabled selected>Select Target Language...</option>
+                                <option>English</option>
+                                <option>Tamil</option>
+                                <option>Spanish</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-semibold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-sliders text-primary"></i> Subtitle Options</h4>
+                            <div class="space-y-2">
+                                <label class="flex items-center bg-slate-50 p-3 rounded-lg cursor-pointer">
+                                    <input type="checkbox" checked class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary">
+                                    <span class="ml-3 text-sm text-slate-700 font-medium">Generate SRT file</span>
+                                </label>
+                                <label class="flex items-center bg-slate-50 p-3 rounded-lg cursor-pointer">
+                                    <input type="checkbox" class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary">
+                                    <span class="ml-3 text-sm text-slate-700 font-medium">Generate TXT transcript</span>
+                                </label>
+                                <label class="flex items-center bg-slate-50 p-3 rounded-lg cursor-pointer">
+                                    <input type="checkbox" checked class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary">
+                                    <span class="ml-3 text-sm text-slate-700 font-medium">Add timestamps</span>
+                                </label>
+                                <label class="flex items-center bg-slate-50 p-3 rounded-lg cursor-pointer">
+                                    <input type="checkbox" class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary">
+                                    <span class="ml-3 text-sm text-slate-700 font-medium">Speaker detection <span class="bg-blue-100 text-primary text-[10px] px-2 py-0.5 rounded ml-2 font-bold uppercase">Beta</span></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-semibold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-bullseye text-primary"></i> Accuracy Mode</h4>
+                            <div class="grid grid-cols-3 gap-3">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="accuracy" class="peer sr-only">
+                                    <div class="rounded-lg border border-slate-200 bg-white px-3 py-3 text-center hover:bg-slate-50 peer-checked:border-primary peer-checked:bg-blue-50 peer-checked:ring-1 peer-checked:ring-primary transition">
+                                        <div class="text-lg mb-1">⚡</div>
+                                        <div class="text-xs font-semibold text-slate-700">Fast</div>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="accuracy" checked class="peer sr-only">
+                                    <div class="rounded-lg border border-slate-200 bg-white px-3 py-3 text-center hover:bg-slate-50 peer-checked:border-primary peer-checked:bg-blue-50 peer-checked:ring-1 peer-checked:ring-primary transition">
+                                        <div class="text-lg mb-1">⭐</div>
+                                        <div class="text-xs font-semibold text-slate-700">Balanced</div>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="accuracy" class="peer sr-only">
+                                    <div class="rounded-lg border border-slate-200 bg-white px-3 py-3 text-center hover:bg-slate-50 peer-checked:border-primary peer-checked:bg-blue-50 peer-checked:ring-1 peer-checked:ring-primary transition">
+                                        <div class="text-lg mb-1">🎯</div>
+                                        <div class="text-xs font-semibold text-slate-700">High</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-10 text-center border-t border-slate-100 pt-8">
+                    <button id="generate-btn" class="w-full md:w-auto bg-primary hover:bg-primaryHover text-white font-bold py-4 px-12 rounded-full transition shadow-lg shadow-blue-500/30 text-lg flex items-center justify-center gap-3 mx-auto disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Subtitles
+                    </button>
+                </div>
+            </div>
+
+            <div id="progress-view" class="hidden fade-in py-10">
+                <div class="text-center mb-8">
+                    <div class="inline-block animate-spin text-4xl text-primary mb-4">
+                        <i class="fa-solid fa-circle-notch"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-800" id="progress-text">Processing your file...</h3>
+                    <p class="text-slate-500 mt-2">This usually takes a few seconds.</p>
+                </div>
+
+                <div class="w-full bg-slate-100 rounded-full h-4 mb-8 overflow-hidden relative">
+                    <div id="progress-bar" class="bg-primary h-4 rounded-full transition-all duration-300 ease-out w-0 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 right-0 bottom-0 bg-white/20 -translate-x-full animate-[shimmer_2s_infinite]"></div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between text-sm font-medium text-slate-400 relative">
+                    <div class="flex flex-col items-center gap-2 text-primary" id="step-1">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 text-primary flex items-center justify-center"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                        Uploading
+                    </div>
+                    <div class="flex flex-col items-center gap-2" id="step-2">
+                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-colors" id="step-icon-2"><i class="fa-solid fa-wave-square"></i></div>
+                        Processing audio
+                    </div>
+                    <div class="flex flex-col items-center gap-2" id="step-3">
+                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-colors" id="step-icon-3"><i class="fa-solid fa-closed-captioning"></i></div>
+                        Generating
+                    </div>
+                    <div class="flex flex-col items-center gap-2" id="step-4">
+                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-colors" id="step-icon-4"><i class="fa-solid fa-check-double"></i></div>
+                        Finalizing
+                    </div>
+                </div>
+            </div>
+
+            <div id="success-view" class="hidden fade-in py-10 text-center">
+                <div class="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">Subtitles generated successfully 🎉</h2>
+                <p class="text-slate-500 mb-10">Your file is ready to download.</p>
+
+                <div class="flex flex-col sm:flex-row justify-center gap-4 max-w-2xl mx-auto">
+                    <button class="flex-1 bg-primary hover:bg-primaryHover text-white font-semibold py-4 px-6 rounded-xl transition shadow-lg shadow-blue-500/20 flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-download"></i> Download SRT
+                    </button>
+                    <button class="flex-1 bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 font-semibold py-4 px-6 rounded-xl transition shadow-sm flex items-center justify-center gap-3">
+                        <i class="fa-regular fa-file-lines"></i> Download TXT
+                    </button>
+                </div>
+                
+                <div id="translated-download" class="mt-4 max-w-2xl mx-auto hidden">
+                    <button class="w-full bg-teal-50 border-2 border-teal-200 hover:bg-teal-100 text-teal-800 font-semibold py-4 px-6 rounded-xl transition flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-language"></i> Download Translated SRT
+                    </button>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <button onclick="location.reload()" class="text-slate-500 hover:text-primary font-medium text-sm transition underline">
+                        Process another file
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+    <section id="features" class="bg-white py-24 border-t border-slate-100">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">Why use SubGen AI?</h2>
+                <p class="text-slate-500">Everything you need for perfect captions in one tool.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-lg transition">
+                    <div class="w-12 h-12 bg-blue-100 text-primary rounded-xl flex items-center justify-center text-xl mb-6"><i class="fa-solid fa-photo-film"></i></div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Multi-format Support</h3>
+                    <p class="text-slate-600 leading-relaxed">Works seamlessly with all major audio and video file formats (MP4, MP3, WAV, MKV).</p>
+                </div>
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-lg transition">
+                    <div class="w-12 h-12 bg-blue-100 text-primary rounded-xl flex items-center justify-center text-xl mb-6"><i class="fa-solid fa-ear-listen"></i></div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Auto Language Detection</h3>
+                    <p class="text-slate-600 leading-relaxed">Not sure about the dialect? Our AI detects the spoken language automatically.</p>
+                </div>
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-lg transition">
+                    <div class="w-12 h-12 bg-blue-100 text-primary rounded-xl flex items-center justify-center text-xl mb-6"><i class="fa-solid fa-earth-asia"></i></div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Multi-Language Support</h3>
+                    <p class="text-slate-600 leading-relaxed">Robust support for global languages including English, Tamil, Hindi, Spanish, and 90+ more.</p>
+                </div>
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-lg transition">
+                    <div class="w-12 h-12 bg-blue-100 text-primary rounded-xl flex items-center justify-center text-xl mb-6"><i class="fa-solid fa-brain"></i></div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">AI High Accuracy</h3>
+                    <p class="text-slate-600 leading-relaxed">Powered by state-of-the-art neural networks to handle background noise and accents.</p>
+                </div>
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-lg transition">
+                    <div class="w-12 h-12 bg-blue-100 text-primary rounded-xl flex items-center justify-center text-xl mb-6"><i class="fa-solid fa-language"></i></div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Subtitle Translation</h3>
+                    <p class="text-slate-600 leading-relaxed">Generate native subtitles and immediately translate them to target audiences globally.</p>
+                </div>
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-lg transition">
+                    <div class="w-12 h-12 bg-blue-100 text-primary rounded-xl flex items-center justify-center text-xl mb-6"><i class="fa-solid fa-infinity"></i></div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">No Upload Limits</h3>
+                    <p class="text-slate-600 leading-relaxed">Process hour-long lectures or podcasts without worrying about restrictive time constraints.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="py-24 bg-slate-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">How it works</h2>
+                <p class="text-slate-500">Three simple steps to perfect subtitles.</p>
+            </div>
+            
+            <div class="flex flex-col md:flex-row justify-center items-center gap-10 max-w-5xl mx-auto">
+                <div class="text-center flex-1">
+                    <div class="w-24 h-24 bg-white rounded-full shadow-md flex items-center justify-center text-3xl text-primary mx-auto mb-6 border-4 border-slate-50 relative z-10"><i class="fa-solid fa-upload"></i></div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">1. Upload file</h3>
+                    <p class="text-slate-500 text-sm">Drop your video or audio file into the browser.</p>
+                </div>
+                <div class="hidden md:block w-24 h-1 bg-slate-200 rounded"></div>
+                <div class="text-center flex-1">
+                    <div class="w-24 h-24 bg-white rounded-full shadow-md flex items-center justify-center text-3xl text-primary mx-auto mb-6 border-4 border-slate-50 relative z-10"><i class="fa-solid fa-robot"></i></div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">2. AI transcribes</h3>
+                    <p class="text-slate-500 text-sm">Our engine processes speech to text automatically.</p>
+                </div>
+                <div class="hidden md:block w-24 h-1 bg-slate-200 rounded"></div>
+                <div class="text-center flex-1">
+                    <div class="w-24 h-24 bg-white rounded-full shadow-md flex items-center justify-center text-3xl text-primary mx-auto mb-6 border-4 border-slate-50 relative z-10"><i class="fa-solid fa-file-arrow-down"></i></div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">3. Download SRT</h3>
+                    <p class="text-slate-500 text-sm">Export your ready-to-use subtitles instantly.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-24 bg-white border-t border-slate-100">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-slate-900 mb-12 text-center">Built for everyone</h2>
+            <div class="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
+                <div class="px-6 py-3 bg-slate-50 border border-slate-200 rounded-full text-slate-700 font-medium flex items-center gap-2"><i class="fa-brands fa-youtube text-red-500"></i> YouTube Creators</div>
+                <div class="px-6 py-3 bg-slate-50 border border-slate-200 rounded-full text-slate-700 font-medium flex items-center gap-2"><i class="fa-solid fa-graduation-cap text-blue-500"></i> Students & Lecturers</div>
+                <div class="px-6 py-3 bg-slate-50 border border-slate-200 rounded-full text-slate-700 font-medium flex items-center gap-2"><i class="fa-solid fa-microphone-lines text-purple-500"></i> Podcasters</div>
+                <div class="px-6 py-3 bg-slate-50 border border-slate-200 rounded-full text-slate-700 font-medium flex items-center gap-2"><i class="fa-solid fa-clapperboard text-slate-800"></i> Video Editors</div>
+                <div class="px-6 py-3 bg-slate-50 border border-slate-200 rounded-full text-slate-700 font-medium flex items-center gap-2"><i class="fa-brands fa-tiktok text-black"></i> Social Media Creators</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-24 bg-slate-50">
+        <div class="container mx-auto px-6 max-w-3xl">
+            <h2 class="text-3xl font-bold text-slate-900 mb-10 text-center">Frequently Asked Questions</h2>
+            
+            <div class="space-y-4">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h4 class="font-bold text-slate-800 text-lg mb-2">How accurate are the subtitles?</h4>
+                    <p class="text-slate-600">Our High Accuracy model averages 98%+ accuracy for clear audio. It handles background noise and accents effectively, though highly complex technical terms may require a quick proofread.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h4 class="font-bold text-slate-800 text-lg mb-2">What file sizes are supported?</h4>
+                    <p class="text-slate-600">You can upload files up to 2GB in size. For massive video files, we recommend exporting an audio-only version (like MP3) to speed up upload times.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h4 class="font-bold text-slate-800 text-lg mb-2">Is my data secure?</h4>
+                    <p class="text-slate-600">Yes. Files are processed on secure servers and automatically deleted immediately after the subtitle generation is completed. We do not store or use your media for training.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h4 class="font-bold text-slate-800 text-lg mb-2">How long does processing take?</h4>
+                    <p class="text-slate-600">Typically, processing takes about 10-15% of the file's duration. A 10-minute video will usually generate subtitles in around 1 to 1.5 minutes.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h4 class="font-bold text-slate-800 text-lg mb-2">Which languages are supported?</h4>
+                    <p class="text-slate-600">We support over 90 languages including English, Tamil, Hindi, Spanish, French, German, Mandarin, Arabic, and many more for both transcription and translation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-white py-12 border-t border-slate-200 mt-auto">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-closed-captioning text-primary"></i> SubGen AI
+            </div>
+            <div class="flex flex-wrap justify-center gap-6 text-sm text-slate-500 font-medium">
+                <a href="#" class="hover:text-primary transition">About</a>
+                <a href="#" class="hover:text-primary transition">Contact</a>
+                <a href="#" class="hover:text-primary transition">Privacy Policy</a>
+                <a href="#" class="hover:text-primary transition">Terms</a>
+            </div>
+            <div class="text-sm text-slate-400 font-medium italic">
+                "Made for creators & students"
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // UI Elements
+            const translateToggle = document.getElementById('translate-toggle');
+            const targetLang = document.getElementById('target-lang');
+            const fileUpload = document.getElementById('file-upload');
+            const fileName = document.getElementById('file-name');
+            const generateBtn = document.getElementById('generate-btn');
+            
+            const setupView = document.getElementById('setup-view');
+            const progressView = document.getElementById('progress-view');
+            const successView = document.getElementById('success-view');
+            
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const translatedDownload = document.getElementById('translated-download');
+
+            // Toggle Translation Dropdown
+            translateToggle.addEventListener('change', (e) => {
+                if(e.target.checked) {
+                    targetLang.classList.remove('hidden');
+                    // Small delay for smooth opacity transition
+                    setTimeout(() => targetLang.classList.remove('opacity-0'), 10);
+                } else {
+                    targetLang.classList.add('opacity-0');
+                    setTimeout(() => targetLang.classList.add('hidden'), 300);
+                }
+            });
+
+            // Handle File Upload Selection
+            fileUpload.addEventListener('change', (e) => {
+                if(e.target.files.length > 0) {
+                    fileName.textContent = "📎 " + e.target.files[0].name;
+                    fileName.classList.remove('hidden');
+                } else {
+                    fileName.classList.add('hidden');
+                }
+            });
+
+            // Simulate Generation Process
+            generateBtn.addEventListener('click', () => {
+                // Check if file is uploaded (mock check, we proceed anyway for demo)
+                
+                // Hide Setup, Show Progress
+                setupView.classList.add('hidden');
+                progressView.classList.remove('hidden');
+
+                // Simulation Steps
+                const steps = [
+                    { width: '25%', text: 'Uploading file...', elementId: 'step-2', delay: 1000 },
+                    { width: '50%', text: 'Processing audio tracks...', elementId: 'step-3', delay: 3000 },
+                    { width: '85%', text: 'Generating subtitles with AI...', elementId: 'step-4', delay: 5500 },
+                    { width: '100%', text: 'Finalizing formatting...', elementId: null, delay: 7500 }
+                ];
+
+                // Update Progress Bar
+                steps.forEach(step => {
+                    setTimeout(() => {
+                        progressBar.style.width = step.width;
+                        progressText.textContent = step.text;
+                        
+                        // Update icons visually to show completion
+                        if(step.elementId) {
+                            const iconContainer = document.getElementById('step-icon-' + step.elementId.split('-')[1]);
+                            const stepTextContainer = document.getElementById(step.elementId);
+                            
+                            iconContainer.classList.remove('bg-slate-100');
+                            iconContainer.classList.add('bg-blue-100', 'text-primary');
+                            stepTextContainer.classList.add('text-primary');
+                        }
+                    }, step.delay);
+                });
+
+                // Complete and show Success View
+                setTimeout(() => {
+                    progressView.classList.add('hidden');
+                    successView.classList.remove('hidden');
+                    
+                    // Show translated button if toggle was on
+                    if(translateToggle.checked) {
+                        translatedDownload.classList.remove('hidden');
+                    }
+                }, 8500);
+            });
+        });
+    </script>
+</body>
+</html>
